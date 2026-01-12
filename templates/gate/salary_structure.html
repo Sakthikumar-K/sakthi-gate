@@ -1,0 +1,171 @@
+{% extends "gate/base.html" %}
+
+{% block title %}Salary Structure - Gate Garments HR{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="page-title">
+            <i class="fas fa-money-bill"></i> Manage Salary Structure
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                Salary Structure for {{ employee.full_name }}
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <h6 class="mb-3 text-primary">Earnings Components</h6>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="basic_salary" class="form-label">Basic Salary *</label>
+                            <input type="number" name="basic_salary" id="basic_salary" class="form-control" 
+                                   value="{% if salary %}{{ salary.basic_salary }}{% endif %}" step="0.01" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="hra" class="form-label">HRA (House Rent Allowance)</label>
+                            <input type="number" name="hra" id="hra" class="form-control" 
+                                   value="{% if salary %}{{ salary.hra }}{% else %}0{% endif %}" step="0.01">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="dearness_allowance" class="form-label">Dearness Allowance (DA)</label>
+                            <input type="number" name="dearness_allowance" id="dearness_allowance" class="form-control" 
+                                   value="{% if salary %}{{ salary.dearness_allowance }}{% else %}0{% endif %}" step="0.01">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="conveyance" class="form-label">Conveyance</label>
+                            <input type="number" name="conveyance" id="conveyance" class="form-control" 
+                                   value="{% if salary %}{{ salary.conveyance }}{% else %}0{% endif %}" step="0.01">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="medical_allowance" class="form-label">Medical Allowance</label>
+                            <input type="number" name="medical_allowance" id="medical_allowance" class="form-control" 
+                                   value="{% if salary %}{{ salary.medical_allowance }}{% else %}0{% endif %}" step="0.01">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="other_allowances" class="form-label">Other Allowances</label>
+                            <input type="number" name="other_allowances" id="other_allowances" class="form-control" 
+                                   value="{% if salary %}{{ salary.other_allowances }}{% else %}0{% endif %}" step="0.01">
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="mb-3 text-danger">Deductions Components</h6>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="pf_contribution" class="form-label">PF Contribution</label>
+                            <input type="number" name="pf_contribution" id="pf_contribution" class="form-control" 
+                                   value="{% if salary %}{{ salary.pf_contribution }}{% else %}0{% endif %}" step="0.01">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="esi_contribution" class="form-label">ESI Contribution</label>
+                            <input type="number" name="esi_contribution" id="esi_contribution" class="form-control" 
+                                   value="{% if salary %}{{ salary.esi_contribution }}{% else %}0{% endif %}" step="0.01">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="income_tax" class="form-label">Income Tax</label>
+                            <input type="number" name="income_tax" id="income_tax" class="form-control" 
+                                   value="{% if salary %}{{ salary.income_tax }}{% else %}0{% endif %}" step="0.01">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="other_deductions" class="form-label">Other Deductions</label>
+                            <input type="number" name="other_deductions" id="other_deductions" class="form-control" 
+                                   value="{% if salary %}{{ salary.other_deductions }}{% else %}0{% endif %}" step="0.01">
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Summary -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded">
+                                <strong class="text-success">Gross Salary:</strong>
+                                <h4 class="text-success">₹<span id="gross_salary">0.00</span></h4>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded">
+                                <strong class="text-danger">Total Deductions:</strong>
+                                <h4 class="text-danger">₹<span id="total_deductions">0.00</span></h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded">
+                                <strong>Net Salary (Take Home):</strong>
+                                <h3 class="text-primary">₹<span id="net_salary">0.00</span></h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            <i class="fas fa-save"></i> Save Salary Structure
+                        </button>
+                        <a href="{% url 'employee_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calculateSalary() {
+        const basic = parseFloat(document.getElementById('basic_salary').value) || 0;
+        const hra = parseFloat(document.getElementById('hra').value) || 0;
+        const da = parseFloat(document.getElementById('dearness_allowance').value) || 0;
+        const conveyance = parseFloat(document.getElementById('conveyance').value) || 0;
+        const medical = parseFloat(document.getElementById('medical_allowance').value) || 0;
+        const other_allow = parseFloat(document.getElementById('other_allowances').value) || 0;
+        
+        const pf = parseFloat(document.getElementById('pf_contribution').value) || 0;
+        const esi = parseFloat(document.getElementById('esi_contribution').value) || 0;
+        const tax = parseFloat(document.getElementById('income_tax').value) || 0;
+        const other_ded = parseFloat(document.getElementById('other_deductions').value) || 0;
+        
+        const gross = basic + hra + da + conveyance + medical + other_allow;
+        const deductions = pf + esi + tax + other_ded;
+        const net = gross - deductions;
+        
+        document.getElementById('gross_salary').textContent = gross.toFixed(2);
+        document.getElementById('total_deductions').textContent = deductions.toFixed(2);
+        document.getElementById('net_salary').textContent = net.toFixed(2);
+    }
+    
+    // Add event listeners to all input fields
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('input', calculateSalary);
+    });
+    
+    // Calculate on page load
+    calculateSalary();
+</script>
+{% endblock %}

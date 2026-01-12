@@ -1,0 +1,105 @@
+{% extends "gate/base.html" %}
+
+{% block title %}Payroll Records - Gate Garments HR{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="page-title">
+            <i class="fas fa-receipt"></i> Payroll & Salary Slips
+        </h2>
+    </div>
+</div>
+
+<!-- Filter -->
+{% if user.is_staff %}
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <select name="payroll_month" class="form-select">
+                    <option value="">All Months</option>
+                    {% for month in payroll_months %}
+                        <option value="{{ month.id }}" {% if request.GET.payroll_month|stringformat:"s" == month.id|stringformat:"s" %}selected{% endif %}>
+                            {{ month.month }} ({{ month.get_status_display }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Payroll Records Table -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between">
+        <span><i class="fas fa-table"></i> Salary Records</span>
+        {% if user.is_staff %}
+        <a href="{% url 'payroll_processing' %}" class="btn btn-sm btn-success">
+            <i class="fas fa-calculator"></i> Process New Payroll
+        </a>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        {% if payroll_records %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Month</th>
+                            <th>Working Days</th>
+                            <th>Gross Salary</th>
+                            <th>Deductions</th>
+                            <th>Net Salary</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in payroll_records %}
+                        <tr>
+                            <td>
+                                <strong>
+                                    {% if user.is_staff %}
+                                        {{ record.employee.full_name }}
+                                    {% else %}
+                                        My Salary
+                                    {% endif %}
+                                </strong>
+                            </td>
+                            <td>{{ record.payroll_month.month }}</td>
+                            <td>{{ record.working_days }}</td>
+                            <td>₹{{ record.gross_salary|floatformat:2 }}</td>
+                            <td>₹{{ record.total_deductions|floatformat:2 }}</td>
+                            <td>
+                                <strong class="text-success">₹{{ record.net_salary|floatformat:2 }}</strong>
+                            </td>
+                            <td>
+                                {% if record.salary_slip %}
+                                    <a href="{% url 'salary_slip_view' record.salary_slip.id %}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-file-pdf"></i> View Slip
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted small">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No payroll records found</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

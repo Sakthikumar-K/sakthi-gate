@@ -1,0 +1,186 @@
+{% extends "gate/base.html" %}
+
+{% block title %}Admin Dashboard - Gate Garments HR{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="page-title">
+            <i class="fas fa-chart-line"></i> Admin Dashboard
+        </h2>
+    </div>
+</div>
+
+<!-- Key Metrics -->
+<div class="row mb-4">
+    <div class="col-md-6 col-lg-3">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted">Active Employees</p>
+                        <div class="stat-number">{{ total_employees }}</div>
+                    </div>
+                    <i class="fas fa-users fa-2x text-primary opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted">Departments</p>
+                        <div class="stat-number">{{ total_departments }}</div>
+                    </div>
+                    <i class="fas fa-building fa-2x text-info opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="card dashboard-card success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted">Present Today</p>
+                        <div class="stat-number" style="color: #27ae60;">{{ present_today }}</div>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x text-success opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="card dashboard-card danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted">Absent Today</p>
+                        <div class="stat-number" style="color: #e74c3c;">{{ absent_today }}</div>
+                    </div>
+                    <i class="fas fa-times-circle fa-2x text-danger opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Administration Tools -->
+<div class="row">
+    <!-- Pending Approvals -->
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-clock"></i> Pending Approvals
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-6">
+                        <h3 class="text-warning">{{ pending_leaves }}</h3>
+                        <p class="text-muted">Leave Requests</p>
+                        <a href="{% url 'leave_list' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-arrow-right"></i> Review
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <h3 class="text-info">0</h3>
+                        <p class="text-muted">Salary Advances</p>
+                        <a href="#" class="btn btn-sm btn-primary disabled">
+                            <i class="fas fa-arrow-right"></i> Review
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Payroll Processing -->
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-calculator"></i> Recent Payroll Processing
+            </div>
+            <div class="card-body">
+                {% if payroll_months %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payroll in payroll_months %}
+                                <tr>
+                                    <td><strong>{{ payroll.month }}</strong></td>
+                                    <td>
+                                        <span class="badge badge-{% if payroll.status == 'PAID' %}success{% elif payroll.status == 'PROCESSED' %}info{% elif payroll.status == 'APPROVED' %}primary{% else %}warning{% endif %}">
+                                            {{ payroll.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="small">{{ payroll.processing_date|date:"Y-m-d" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-cogs"></i> Quick Admin Tools
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <a href="{% url 'attendance_view' %}" class="card text-decoration-none h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-check-square fa-3x text-primary mb-3"></i>
+                                <h6>Mark Attendance</h6>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <a href="{% url 'employee_list' %}" class="card text-decoration-none h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-users fa-3x text-success mb-3"></i>
+                                <h6>Manage Employees</h6>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <a href="{% url 'payroll_processing' %}" class="card text-decoration-none h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-calculator fa-3x text-warning mb-3"></i>
+                                <h6>Process Payroll</h6>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <a href="/admin/" class="card text-decoration-none h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-sliders-h fa-3x text-danger mb-3"></i>
+                                <h6>Django Admin</h6>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

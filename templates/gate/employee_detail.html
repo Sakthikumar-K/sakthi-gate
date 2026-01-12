@@ -1,0 +1,242 @@
+{% extends "gate/base.html" %}
+
+{% block title %}Employee Detail - Gate Garments HR{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="page-title">
+            <i class="fas fa-user-tie"></i> Employee Details - {{ employee.full_name }}
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Personal Information -->
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-id-card"></i> Personal Information
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td class="fw-bold">Employee ID:</td>
+                        <td>{{ employee.employee_id }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Name:</td>
+                        <td>{{ employee.full_name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Email:</td>
+                        <td>{{ employee.email }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Phone:</td>
+                        <td>{{ employee.phone|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">DOB:</td>
+                        <td>{{ employee.date_of_birth }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Gender:</td>
+                        <td>{{ employee.get_gender_display }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employment Details -->
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-briefcase"></i> Employment Details
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td class="fw-bold">Department:</td>
+                        <td>{{ employee.department|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Designation:</td>
+                        <td>{{ employee.designation }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Joining Date:</td>
+                        <td>{{ employee.date_of_joining }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Status:</td>
+                        <td>
+                            {% if employee.status == 'A' %}
+                                <span class="badge badge-success">Active</span>
+                            {% elif employee.status == 'I' %}
+                                <span class="badge badge-secondary">Inactive</span>
+                            {% else %}
+                                <span class="badge badge-warning">{{ employee.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Contact Information -->
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-map-marker-alt"></i> Contact Information
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td class="fw-bold">Address:</td>
+                        <td>{{ employee.address }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">City:</td>
+                        <td>{{ employee.city }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">State:</td>
+                        <td>{{ employee.state }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Postal Code:</td>
+                        <td>{{ employee.postal_code }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bank Details -->
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-university"></i> Bank Details
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td class="fw-bold">Bank Name:</td>
+                        <td>{{ employee.bank_name|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Account Number:</td>
+                        <td>{{ employee.account_number|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">IFSC Code:</td>
+                        <td>{{ employee.ifsc_code|default:"-" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Salary Structure -->
+{% if salary_structure %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between">
+                <span><i class="fas fa-money-bill"></i> Salary Structure</span>
+                <a href="{% url 'salary_structure' %}?employee_id={{ employee.id }}" class="btn btn-sm btn-warning">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3">Earnings</h6>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td>Basic Salary:</td>
+                                <td class="text-end">₹{{ salary_structure.basic_salary|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>HRA:</td>
+                                <td class="text-end">₹{{ salary_structure.hra|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Dearness Allowance:</td>
+                                <td class="text-end">₹{{ salary_structure.dearness_allowance|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Conveyance:</td>
+                                <td class="text-end">₹{{ salary_structure.conveyance|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Medical Allowance:</td>
+                                <td class="text-end">₹{{ salary_structure.medical_allowance|floatformat:2 }}</td>
+                            </tr>
+                            <tr class="fw-bold border-top">
+                                <td>Gross Salary:</td>
+                                <td class="text-end text-success">₹{{ salary_structure.gross_salary|floatformat:2 }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-danger mb-3">Deductions</h6>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td>PF Contribution:</td>
+                                <td class="text-end">₹{{ salary_structure.pf_contribution|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>ESI Contribution:</td>
+                                <td class="text-end">₹{{ salary_structure.esi_contribution|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Income Tax:</td>
+                                <td class="text-end">₹{{ salary_structure.income_tax|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Other Deductions:</td>
+                                <td class="text-end">₹{{ salary_structure.other_deductions|floatformat:2 }}</td>
+                            </tr>
+                            <tr class="fw-bold border-top">
+                                <td>Total Deductions:</td>
+                                <td class="text-end text-danger">₹{{ salary_structure.total_deductions|floatformat:2 }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-warning" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> No salary structure defined for this employee.
+            <a href="{% url 'salary_structure' %}?employee_id={{ employee.id }}" class="btn btn-sm btn-warning ms-2">
+                <i class="fas fa-plus"></i> Create Salary Structure
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Action Buttons -->
+<div class="row">
+    <div class="col-12">
+        <a href="{% url 'employee_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Employee List
+        </a>
+        <a href="/admin/gate/employee/{{ employee.id }}/change/" class="btn btn-warning">
+            <i class="fas fa-edit"></i> Edit Employee
+        </a>
+    </div>
+</div>
+{% endblock %}

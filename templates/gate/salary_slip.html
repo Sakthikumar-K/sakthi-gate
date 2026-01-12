@@ -1,0 +1,200 @@
+{% extends "gate/base.html" %}
+
+{% block title %}Salary Slip - Gate Garments HR{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="page-title">
+            <i class="fas fa-file-pdf"></i> Salary Slip
+        </h2>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <!-- Header -->
+                <div class="text-center mb-4 pb-3 border-bottom">
+                    <h3 class="mb-1">Gate Garments</h3>
+                    <p class="text-muted mb-2">Attendance, Payroll & Salary Management System</p>
+                    <h5>SALARY SLIP</h5>
+                </div>
+
+                <!-- Employee Information -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p class="mb-2">
+                            <strong>Employee Name:</strong><br>
+                            {{ employee.full_name }}
+                        </p>
+                        <p class="mb-2">
+                            <strong>Employee ID:</strong><br>
+                            {{ employee.employee_id }}
+                        </p>
+                        <p class="mb-2">
+                            <strong>Designation:</strong><br>
+                            {{ employee.designation }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2">
+                            <strong>Department:</strong><br>
+                            {{ employee.department|default:"-" }}
+                        </p>
+                        <p class="mb-2">
+                            <strong>Payroll Month:</strong><br>
+                            {{ payroll_record.payroll_month.month }}
+                        </p>
+                        <p class="mb-2">
+                            <strong>Slip Number:</strong><br>
+                            {{ salary_slip.slip_number }}
+                        </p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Attendance Information -->
+                <div class="mb-4">
+                    <h6 class="mb-3 text-primary">Attendance Summary</h6>
+                    <div class="row text-center">
+                        <div class="col-6 col-md-3">
+                            <div class="p-2 bg-light rounded">
+                                <p class="mb-1 small text-muted">Working Days</p>
+                                <p class="mb-0 fw-bold">{{ payroll_record.working_days }}</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="p-2 bg-light rounded">
+                                <p class="mb-1 small text-muted">Present Days</p>
+                                <p class="mb-0 fw-bold">{{ payroll_record.present_days }}</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="p-2 bg-light rounded">
+                                <p class="mb-1 small text-muted">Leave Days</p>
+                                <p class="mb-0 fw-bold">{{ payroll_record.leave_days }}</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="p-2 bg-light rounded">
+                                <p class="mb-1 small text-muted">Absent Days</p>
+                                <p class="mb-0 fw-bold">{{ payroll_record.absent_days }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Earnings -->
+                <div class="mb-4">
+                    <h6 class="mb-3 text-success">EARNINGS</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless">
+                            <tbody>
+                                <tr>
+                                    <td>Basic Salary</td>
+                                    <td class="text-end">₹{{ payroll_record.basic_salary|floatformat:2 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>House Rent Allowance (HRA)</td>
+                                    <td class="text-end">₹{{ payroll_record.hra|floatformat:2 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Dearness Allowance (DA)</td>
+                                    <td class="text-end">₹{{ payroll_record.dearness_allowance|floatformat:2 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Conveyance</td>
+                                    <td class="text-end">₹{{ payroll_record.conveyance|floatformat:2 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Medical Allowance</td>
+                                    <td class="text-end">₹{{ payroll_record.medical_allowance|floatformat:2 }}</td>
+                                </tr>
+                                {% if payroll_record.other_allowances > 0 %}
+                                <tr>
+                                    <td>Other Allowances</td>
+                                    <td class="text-end">₹{{ payroll_record.other_allowances|floatformat:2 }}</td>
+                                </tr>
+                                {% endif %}
+                                <tr class="fw-bold border-top">
+                                    <td>Gross Salary</td>
+                                    <td class="text-end text-success">₹{{ payroll_record.gross_salary|floatformat:2 }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Deductions -->
+                <div class="mb-4">
+                    <h6 class="mb-3 text-danger">DEDUCTIONS</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless">
+                            <tbody>
+                                {% if payroll_record.pf_contribution > 0 %}
+                                <tr>
+                                    <td>Provident Fund (PF)</td>
+                                    <td class="text-end">₹{{ payroll_record.pf_contribution|floatformat:2 }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if payroll_record.esi_contribution > 0 %}
+                                <tr>
+                                    <td>ESI Contribution</td>
+                                    <td class="text-end">₹{{ payroll_record.esi_contribution|floatformat:2 }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if payroll_record.income_tax > 0 %}
+                                <tr>
+                                    <td>Income Tax</td>
+                                    <td class="text-end">₹{{ payroll_record.income_tax|floatformat:2 }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if payroll_record.other_deductions > 0 %}
+                                <tr>
+                                    <td>Other Deductions</td>
+                                    <td class="text-end">₹{{ payroll_record.other_deductions|floatformat:2 }}</td>
+                                </tr>
+                                {% endif %}
+                                <tr class="fw-bold border-top">
+                                    <td>Total Deductions</td>
+                                    <td class="text-end text-danger">₹{{ payroll_record.total_deductions|floatformat:2 }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Net Salary -->
+                <div class="mb-4 p-3 bg-light rounded">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">NET SALARY (Take Home)</h5>
+                        <h3 class="mb-0 text-success">₹{{ payroll_record.net_salary|floatformat:2 }}</h3>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="text-center pt-3 border-top mt-5">
+                    <p class="text-muted small mb-1">This is a system-generated salary slip</p>
+                    <p class="text-muted small mb-1">Generated on: {{ salary_slip.issue_date }}</p>
+                    <p class="text-muted small">Please contact HR for any clarifications</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="row mt-4">
+    <div class="col-lg-8 mx-auto">
+        <button class="btn btn-primary me-2" onclick="window.print()">
+            <i class="fas fa-print"></i> Print
+        </button>
+        <a href="{% url 'payroll_records' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+{% endblock %}

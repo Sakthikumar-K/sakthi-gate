@@ -1,0 +1,185 @@
+{% extends "gate/base.html" %}
+
+{% block title %}Attendance Management - Gate Garments HR{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="page-title">
+            <i class="fas fa-check-circle"></i> Mark Attendance
+        </h2>
+    </div>
+</div>
+
+<!-- Mark Attendance Form -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                Mark Attendance for {{ today|date:"d-m-Y" }}
+            </div>
+            <div class="card-body">
+                <form method="post" id="attendance_form">
+                    {% csrf_token %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="employee_id" class="form-label">Select Employee</label>
+                            <select name="employee_id" id="employee_id" class="form-select" required>
+                                <option value="">-- Choose Employee --</option>
+                                {% for emp in employees %}
+                                    <option value="{{ emp.id }}">{{ emp.employee_id }} - {{ emp.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">Attendance Status</label>
+                            <select name="status" id="status" class="form-select" required>
+                                <option value="">-- Select Status --</option>
+                                <option value="P">Present</option>
+                                <option value="A">Absent</option>
+                                <option value="L">Leave</option>
+                                <option value="H">Half Day</option>
+                                <option value="WFH">Work From Home</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="check_in_time" class="form-label">Check-In Time</label>
+                            <input type="time" name="check_in_time" id="check_in_time" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="check_out_time" class="form-label">Check-Out Time</label>
+                            <input type="time" name="check_out_time" id="check_out_time" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="remarks" class="form-label">Remarks</label>
+                        <textarea name="remarks" id="remarks" class="form-control" rows="3" placeholder="Any additional notes..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Mark Attendance
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Summary -->
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                Today's Summary
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Total Marked:</span>
+                        <strong>{{ today_attendance.count }}</strong>
+                    </div>
+                </div>
+                <hr>
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between">
+                        <span><i class="fas fa-check text-success"></i> Present:</span>
+                        <span>{{ today_attendance|dictsort:"status"|length }}</span>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between">
+                        <span><i class="fas fa-times text-danger"></i> Absent:</span>
+                        <span>{{ today_attendance|dictsort:"status"|length }}</span>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between">
+                        <span><i class="fas fa-plane text-warning"></i> Leave:</span>
+                        <span>{{ today_attendance|dictsort:"status"|length }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Today's Attendance Records -->
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-list"></i> Today's Attendance Records
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Status</th>
+                        <th>Check-In</th>
+                        <th>Check-Out</th>
+                        <th>Remarks</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for att in today_attendance %}
+                    <tr>
+                        <td><strong>{{ att.employee.full_name }}</strong></td>
+                        <td>
+                            {% if att.status == 'P' %}
+                                <span class="badge badge-success">Present</span>
+                            {% elif att.status == 'A' %}
+                                <span class="badge badge-danger">Absent</span>
+                            {% elif att.status == 'L' %}
+                                <span class="badge badge-warning">Leave</span>
+                            {% elif att.status == 'H' %}
+                                <span class="badge badge-info">Half Day</span>
+                            {% else %}
+                                <span class="badge badge-secondary">{{ att.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ att.check_in_time|default:"-" }}</td>
+                        <td>{{ att.check_out_time|default:"-" }}</td>
+                        <td>{{ att.remarks|default:"-" }}</td>
+                        <td>
+                            <a href="/admin/gate/attendance/{{ att.id }}/change/" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            No attendance records for today yet
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('attendance_form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetch('{% url "attendance_view" %}', {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: new FormData(this)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            location.reload();
+        });
+    });
+</script>
+{% endblock %}

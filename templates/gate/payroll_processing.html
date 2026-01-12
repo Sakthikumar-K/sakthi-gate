@@ -1,0 +1,106 @@
+{% extends "gate/base.html" %}
+
+{% block title %}Process Payroll - Gate Garments HR{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="page-title">
+            <i class="fas fa-calculator"></i> Process Payroll
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                Select Payroll Month
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                        <label for="month" class="form-label">Month</label>
+                        <select name="month" id="month" class="form-select" required>
+                            <option value="">-- Select Month --</option>
+                            {% for i, month_name in months %}
+                                <option value="{{ i }}">{{ month_name|add:i }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="year" class="form-label">Year</label>
+                        <input type="number" name="year" id="year" class="form-control" value="{{ current_year }}" required>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note:</strong> This will process payroll for all active employees for the selected month.
+                        Salary slips will be automatically generated.
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <i class="fas fa-play"></i> Process Payroll
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-lightbulb"></i> Process Information
+            </div>
+            <div class="card-body">
+                <h6 class="mb-3">What happens when you process payroll?</h6>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <i class="fas fa-check text-success"></i> Attendance data is compiled for the selected month
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-check text-success"></i> Salary calculations are performed using salary structures
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-check text-success"></i> Salary slips are generated for each employee
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-check text-success"></i> Payment records are created in the system
+                    </li>
+                </ul>
+
+                <hr>
+
+                <h6 class="mb-3">Prerequisites</h6>
+                <ul class="small mb-0">
+                    <li><i class="fas fa-circle text-muted"></i> All employees must have salary structures defined</li>
+                    <li><i class="fas fa-circle text-muted"></i> Attendance records for the month should be complete</li>
+                    <li><i class="fas fa-circle text-muted"></i> All leaves should be approved</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    
+    const monthSelect = document.getElementById('month');
+    monthSelect.innerHTML = '<option value="">-- Select Month --</option>';
+    
+    monthNames.forEach((name, index) => {
+        const option = document.createElement('option');
+        option.value = index + 1;
+        option.textContent = name;
+        monthSelect.appendChild(option);
+    });
+</script>
+{% endblock %}

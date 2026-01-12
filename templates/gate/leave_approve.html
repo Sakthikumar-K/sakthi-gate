@@ -1,0 +1,103 @@
+{% extends "gate/base.html" %}
+
+{% block title %}Approve Leave - Gate Garments HR{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="page-title">
+            <i class="fas fa-check-circle"></i> Review Leave Request
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mx-auto">
+        <div class="card mb-4">
+            <div class="card-header">
+                Leave Details
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td class="fw-bold">Employee:</td>
+                        <td>{{ leave.employee.full_name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Employee ID:</td>
+                        <td>{{ leave.employee.employee_id }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Leave Type:</td>
+                        <td>{{ leave.get_leave_type_display }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">From:</td>
+                        <td>{{ leave.start_date }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">To:</td>
+                        <td>{{ leave.end_date }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Number of Days:</td>
+                        <td>{{ leave.number_of_days }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Status:</td>
+                        <td>
+                            {% if leave.status == 'P' %}
+                                <span class="badge badge-warning">Pending</span>
+                            {% elif leave.status == 'A' %}
+                                <span class="badge badge-success">Approved</span>
+                            {% else %}
+                                <span class="badge badge-danger">Rejected</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                Reason for Leave
+            </div>
+            <div class="card-body">
+                <p>{{ leave.reason }}</p>
+            </div>
+        </div>
+
+        {% if leave.status == 'P' %}
+        <div class="card">
+            <div class="card-header">
+                Take Action
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" name="action" value="approve" class="btn btn-success btn-lg">
+                            <i class="fas fa-check"></i> Approve Leave
+                        </button>
+                        <button type="submit" name="action" value="reject" class="btn btn-danger btn-lg">
+                            <i class="fas fa-times"></i> Reject Leave
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> This leave request has already been {{ leave.get_status_display|lower }}.
+        </div>
+        {% endif %}
+
+        <div class="mt-3">
+            <a href="{% url 'leave_list' %}" class="btn btn-secondary btn-lg w-100">
+                <i class="fas fa-arrow-left"></i> Back to Leaves
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

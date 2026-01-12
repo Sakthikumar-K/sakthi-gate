@@ -1,0 +1,96 @@
+{% extends "gate/base.html" %}
+
+{% block title %}Leave Management - Gate Garments HR{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="page-title">
+            <i class="fas fa-calendar-check"></i> Leave Management
+        </h2>
+    </div>
+</div>
+
+<!-- Request Leave Button (For Employees) -->
+{% if not user.is_staff %}
+<div class="row mb-4">
+    <div class="col-12">
+        <a href="{% url 'leave_request' %}" class="btn btn-lg btn-success">
+            <i class="fas fa-plus-circle"></i> Request New Leave
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- Leaves List -->
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-list"></i> Leave Records
+    </div>
+    <div class="card-body">
+        {% if leaves %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Leave Type</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Days</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for leave in leaves %}
+                        <tr>
+                            <td>
+                                <strong>
+                                    {% if user.is_staff %}
+                                        {{ leave.employee.full_name }}
+                                    {% else %}
+                                        My Leave
+                                    {% endif %}
+                                </strong>
+                            </td>
+                            <td>{{ leave.get_leave_type_display }}</td>
+                            <td>{{ leave.start_date }}</td>
+                            <td>{{ leave.end_date }}</td>
+                            <td><span class="badge badge-info">{{ leave.number_of_days }}</span></td>
+                            <td>{{ leave.reason|truncatewords:8 }}</td>
+                            <td>
+                                {% if leave.status == 'P' %}
+                                    <span class="badge badge-warning">Pending</span>
+                                {% elif leave.status == 'A' %}
+                                    <span class="badge badge-success">Approved</span>
+                                {% else %}
+                                    <span class="badge badge-danger">Rejected</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.is_staff and leave.status == 'P' %}
+                                    <a href="{% url 'leave_approve' leave.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-check"></i> Review
+                                    </a>
+                                {% elif user.is_staff %}
+                                    <a href="/admin/gate/leave/{{ leave.id }}/change/" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No leave records found</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

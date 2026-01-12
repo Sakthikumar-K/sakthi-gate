@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gate Garments - HR System{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        :root {
+            --primary: #1e3c72;
+            --primary-dark: #0f1f3c;
+            --primary-light: #2d5fa3;
+            --secondary: #00d4ff;
+        }
+
+        .dashboard-card {
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .dashboard-card.success {
+            border-left-color: var(--success-color);
+        }
+
+        .dashboard-card.danger {
+            border-left-color: var(--danger-color);
+        }
+
+        .dashboard-card.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .dashboard-card.success .stat-number {
+            color: var(--success-color);
+        }
+
+        .dashboard-card.danger .stat-number {
+            color: var(--danger-color);
+        }
+
+        .table thead {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background-color: var(--success-color);
+        }
+
+        .badge-danger {
+            background-color: var(--danger-color);
+        }
+
+        .badge-warning {
+            background-color: var(--warning-color);
+        }
+
+        .badge-info {
+            background-color: var(--info-color);
+        }
+
+        .footer {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+
+        .form-control, .form-select {
+            border-radius: 5px;
+            border: 1px solid #bdc3c7;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .page-title {
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'dashboard' %}">
+                <i class="fas fa-building"></i> Gate Garments HR
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle"></i> {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 sidebar">
+                <div class="nav flex-column nav-pills">
+                    <a class="nav-link" href="{% url 'dashboard' %}">
+                        <i class="fas fa-chart-line"></i> Dashboard
+                    </a>
+                    
+                    {% if user.is_staff or user.is_superuser %}
+                        <hr class="text-secondary">
+                        <strong class="text-light ps-3">ADMIN</strong>
+                        <a class="nav-link" href="{% url 'employee_list' %}">
+                            <i class="fas fa-users"></i> Employees
+                        </a>
+                        <a class="nav-link" href="{% url 'attendance_view' %}">
+                            <i class="fas fa-check-circle"></i> Mark Attendance
+                        </a>
+                        <a class="nav-link" href="{% url 'attendance_report' %}">
+                            <i class="fas fa-file-alt"></i> Attendance Report
+                        </a>
+                        <a class="nav-link" href="{% url 'leave_list' %}">
+                            <i class="fas fa-calendar-check"></i> Leave Requests
+                        </a>
+                        <a class="nav-link" href="{% url 'salary_structure' %}">
+                            <i class="fas fa-money-bill"></i> Salary Structure
+                        </a>
+                        <a class="nav-link" href="{% url 'payroll_processing' %}">
+                            <i class="fas fa-calculator"></i> Process Payroll
+                        </a>
+                        <a class="nav-link" href="{% url 'payroll_records' %}">
+                            <i class="fas fa-receipt"></i> Payroll Records
+                        </a>
+                    {% else %}
+                        <hr class="text-secondary">
+                        <strong class="text-light ps-3">EMPLOYEE</strong>
+                        <a class="nav-link" href="{% url 'attendance_calendar_current' %}">
+                            <i class="fas fa-calendar"></i> My Attendance
+                        </a>
+                        <a class="nav-link" href="{% url 'leave_list' %}">
+                            <i class="fas fa-plane"></i> My Leaves
+                        </a>
+                        <a class="nav-link" href="{% url 'leave_request' %}">
+                            <i class="fas fa-plus-circle"></i> Request Leave
+                        </a>
+                        <a class="nav-link" href="{% url 'payroll_records' %}">
+                            <i class="fas fa-file-invoice"></i> Salary Slips
+                        </a>
+                    {% endif %}
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-10 main-content">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer mt-5">
+        <p>&copy; 2026 Gate Garments. All rights reserved. | Attendance, Payroll & Salary Management System</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

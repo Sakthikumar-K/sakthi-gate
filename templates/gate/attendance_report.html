@@ -1,0 +1,109 @@
+{% extends "gate/base.html" %}
+
+{% block title %}Attendance Report - Gate Garments HR{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="page-title">
+            <i class="fas fa-file-alt"></i> Attendance Report
+        </h2>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="start_date" class="form-label">Start Date</label>
+                <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date }}">
+            </div>
+            <div class="col-md-4">
+                <label for="end_date" class="form-label">End Date</label>
+                <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date }}">
+            </div>
+            {% if user.is_staff %}
+            <div class="col-md-4">
+                <label for="employee" class="form-label">Employee</label>
+                <select name="employee" id="employee" class="form-select">
+                    <option value="">All Employees</option>
+                    {% for emp in employees %}
+                        <option value="{{ emp.id }}" {% if request.GET.employee|stringformat:"s" == emp.id|stringformat:"s" %}selected{% endif %}>
+                            {{ emp.full_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Generate Report
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Report Table -->
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-table"></i> Attendance Records
+    </div>
+    <div class="card-body">
+        {% if attendance_records %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Employee</th>
+                            <th>Status</th>
+                            <th>Check-In</th>
+                            <th>Check-Out</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in attendance_records %}
+                        <tr>
+                            <td>{{ record.date }}</td>
+                            <td>
+                                <strong>
+                                    {% if user.is_staff %}
+                                        {{ record.employee.full_name }}
+                                    {% else %}
+                                        My Attendance
+                                    {% endif %}
+                                </strong>
+                            </td>
+                            <td>
+                                {% if record.status == 'P' %}
+                                    <span class="badge badge-success">Present</span>
+                                {% elif record.status == 'A' %}
+                                    <span class="badge badge-danger">Absent</span>
+                                {% elif record.status == 'L' %}
+                                    <span class="badge badge-warning">Leave</span>
+                                {% elif record.status == 'H' %}
+                                    <span class="badge badge-info">Half Day</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">{{ record.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ record.check_in_time|default:"-" }}</td>
+                            <td>{{ record.check_out_time|default:"-" }}</td>
+                            <td>{{ record.remarks|truncatewords:5|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No attendance records found</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
