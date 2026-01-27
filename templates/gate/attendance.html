@@ -21,26 +21,44 @@
             <div class="card-body">
                 <form method="post" id="attendance_form">
                     {% csrf_token %}
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="employee_id" class="form-label">Select Employee</label>
-                            <select name="employee_id" id="employee_id" class="form-select" required>
-                                <option value="">-- Choose Employee --</option>
-                                {% for emp in employees %}
-                                    <option value="{{ emp.id }}">{{ emp.employee_id }} - {{ emp.full_name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="status" class="form-label">Attendance Status</label>
-                            <select name="status" id="status" class="form-select" required>
-                                <option value="">-- Select Status --</option>
-                                <option value="P">Present</option>
-                                <option value="A">Absent</option>
-                                <option value="L">Leave</option>
-                                <option value="H">Half Day</option>
-                                <option value="WFH">Work From Home</option>
-                            </select>
+                    
+                    <div class="mb-3">
+                        <label for="employee_id" class="form-label">Select Employee</label>
+                        <select name="employee_id" id="employee_id" class="form-select" required>
+                            <option value="">-- Choose Employee --</option>
+                            {% for emp in employees %}
+                                <option value="{{ emp.id }}">{{ emp.employee_id }} - {{ emp.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Status Selection with Visual Buttons -->
+                    <div class="mb-4">
+                        <label class="form-label d-block">Attendance Status</label>
+                        <div class="btn-group-vertical w-100" role="group">
+                            <input type="radio" class="btn-check" name="status" id="status_present" value="P" required>
+                            <label class="btn btn-outline-success btn-lg text-start" for="status_present" style="font-size: 1.1rem;">
+                                <i class="fas fa-check-circle" style="font-size: 1.5rem; margin-right: 10px;"></i>
+                                <strong>Present</strong>
+                            </label>
+
+                            <input type="radio" class="btn-check" name="status" id="status_absent" value="A">
+                            <label class="btn btn-outline-danger btn-lg text-start" for="status_absent" style="font-size: 1.1rem;">
+                                <i class="fas fa-times-circle" style="font-size: 1.5rem; margin-right: 10px;"></i>
+                                <strong>Absent</strong>
+                            </label>
+
+                            <input type="radio" class="btn-check" name="status" id="status_leave" value="L">
+                            <label class="btn btn-outline-warning btn-lg text-start" for="status_leave" style="font-size: 1.1rem;">
+                                <i class="fas fa-plane" style="font-size: 1.5rem; margin-right: 10px;"></i>
+                                <strong>Leave</strong>
+                            </label>
+
+                            <input type="radio" class="btn-check" name="status" id="status_halfday" value="H">
+                            <label class="btn btn-outline-info btn-lg text-start" for="status_halfday" style="font-size: 1.1rem;">
+                                <i class="fas fa-hourglass-half" style="font-size: 1.5rem; margin-right: 10px;"></i>
+                                <strong>Half Day</strong>
+                            </label>
                         </div>
                     </div>
 
@@ -57,10 +75,10 @@
 
                     <div class="mb-3">
                         <label for="remarks" class="form-label">Remarks</label>
-                        <textarea name="remarks" id="remarks" class="form-control" rows="3" placeholder="Any additional notes..."></textarea>
+                        <textarea name="remarks" id="remarks" class="form-control" rows="2" placeholder="Any additional notes..."></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
                         <i class="fas fa-save"></i> Mark Attendance
                     </button>
                 </form>
