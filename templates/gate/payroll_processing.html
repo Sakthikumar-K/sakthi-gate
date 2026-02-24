@@ -25,8 +25,8 @@
                         <label for="month" class="form-label">Month</label>
                         <select name="month" id="month" class="form-select" required>
                             <option value="">-- Select Month --</option>
-                            {% for i, month_name in months %}
-                                <option value="{{ i }}">{{ month_name|add:i }}</option>
+                            {% for month_num in months %}
+                                <option value="{{ month_num }}">{{ month_num }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -88,19 +88,18 @@
 
 {% block extra_js %}
 <script>
+    // Display month names instead of numbers
     const monthNames = [
-        'January', 'February', 'March', 'April', 'May', 'June',
+        '', 'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
     
     const monthSelect = document.getElementById('month');
-    monthSelect.innerHTML = '<option value="">-- Select Month --</option>';
+    const options = monthSelect.querySelectorAll('option:not([value=""])');
     
-    monthNames.forEach((name, index) => {
-        const option = document.createElement('option');
-        option.value = index + 1;
-        option.textContent = name;
-        monthSelect.appendChild(option);
+    options.forEach(option => {
+        const monthNum = parseInt(option.value);
+        option.textContent = monthNames[monthNum];
     });
 </script>
 {% endblock %}

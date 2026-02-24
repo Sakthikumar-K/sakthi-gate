@@ -234,7 +234,7 @@
         <a href="{% url 'employee_list' %}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Back to Employee List
         </a>
-        <a href="/admin/gate/employee/{{ employee.id }}/change/" class="btn btn-warning">
+        <a href="{% url 'employee_edit' employee.id %}" class="btn btn-warning">
             <i class="fas fa-edit"></i> Edit Employee
         </a>
     </div>

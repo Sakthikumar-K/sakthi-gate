@@ -8,79 +8,62 @@
         <h2 class="page-title">
             <i class="fas fa-check-circle"></i> Mark Attendance
         </h2>
+        <div style="display: flex; align-items: center; gap: 15px; margin-top: 15px;">
+            <label for="attendance-date" style="margin: 0; font-weight: 500;">Date :</label>
+            <input type="date" id="attendance-date" class="form-control" style="max-width: 200px;" value="{{ today }}" required>
+        </div>
     </div>
 </div>
 
-<!-- Mark Attendance Form -->
+<!-- Search Box -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div style="display: flex; justify-content: center;">
+            <input type="text" id="employee-search" class="form-control" placeholder="Search by name or employee ID..." style="max-width: 500px;">
+        </div>
+    </div>
+</div>
+
 <div class="row">
+    <!-- Employee List with Toggles -->
     <div class="col-lg-8">
-        <div class="card mb-4">
+        <div class="card">
             <div class="card-header">
-                Mark Attendance for {{ today|date:"d-m-Y" }}
+                <h5 class="mb-0">
+                    <i class="fas fa-users"></i> Employee Attendance
+                </h5>
             </div>
             <div class="card-body">
-                <form method="post" id="attendance_form">
+                <form id="attendance-form" method="post">
                     {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="employee_id" class="form-label">Select Employee</label>
-                        <select name="employee_id" id="employee_id" class="form-select" required>
-                            <option value="">-- Choose Employee --</option>
-                            {% for emp in employees %}
-                                <option value="{{ emp.id }}">{{ emp.employee_id }} - {{ emp.full_name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <!-- Status Selection with Visual Buttons -->
-                    <div class="mb-4">
-                        <label class="form-label d-block">Attendance Status</label>
-                        <div class="btn-group-vertical w-100" role="group">
-                            <input type="radio" class="btn-check" name="status" id="status_present" value="P" required>
-                            <label class="btn btn-outline-success btn-lg text-start" for="status_present" style="font-size: 1.1rem;">
-                                <i class="fas fa-check-circle" style="font-size: 1.5rem; margin-right: 10px;"></i>
-                                <strong>Present</strong>
-                            </label>
-
-                            <input type="radio" class="btn-check" name="status" id="status_absent" value="A">
-                            <label class="btn btn-outline-danger btn-lg text-start" for="status_absent" style="font-size: 1.1rem;">
-                                <i class="fas fa-times-circle" style="font-size: 1.5rem; margin-right: 10px;"></i>
-                                <strong>Absent</strong>
-                            </label>
-
-                            <input type="radio" class="btn-check" name="status" id="status_leave" value="L">
-                            <label class="btn btn-outline-warning btn-lg text-start" for="status_leave" style="font-size: 1.1rem;">
-                                <i class="fas fa-plane" style="font-size: 1.5rem; margin-right: 10px;"></i>
-                                <strong>Leave</strong>
-                            </label>
-
-                            <input type="radio" class="btn-check" name="status" id="status_halfday" value="H">
-                            <label class="btn btn-outline-info btn-lg text-start" for="status_halfday" style="font-size: 1.1rem;">
-                                <i class="fas fa-hourglass-half" style="font-size: 1.5rem; margin-right: 10px;"></i>
-                                <strong>Half Day</strong>
-                            </label>
+                    <div class="attendance-list">
+                    {% for emp in employees %}
+                    <div class="attendance-item mb-3 p-3" style="border: 1px solid #ddd; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <div class="employee-info">
+                            <h6 class="mb-1">{{ emp.full_name }}</h6>
+                            <small class="text-muted">{{ emp.employee_id }} • {{ emp.designation }}</small>
+                        </div>
+                        
+                        <div class="toggle-container">
+                            <div class="toggle-switch-container" data-employee-id="{{ emp.id }}" data-employee-name="{{ emp.full_name }}">
+                                <input type="checkbox" id="attendance_{{ emp.id }}" class="attendance-toggle" {% if emp.id in marked_employees %}checked{% endif %} data-status="P">
+                                <label for="attendance_{{ emp.id }}" class="toggle-label"></label>
+                                <small class="status-badge" style="display: block; margin-top: 5px; text-align: center;">
+                                    {% if emp.id in marked_employees %}
+                                        <span class="badge badge-success">Present</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">Absent</span>
+                                    {% endif %}
+                                </small>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="check_in_time" class="form-label">Check-In Time</label>
-                            <input type="time" name="check_in_time" id="check_in_time" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="check_out_time" class="form-label">Check-Out Time</label>
-                            <input type="time" name="check_out_time" id="check_out_time" class="form-control">
-                        </div>
+                    {% empty %}
+                    <div class="text-center text-muted py-4">
+                        <p>No employees available</p>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="remarks" class="form-label">Remarks</label>
-                        <textarea name="remarks" id="remarks" class="form-control" rows="2" placeholder="Any additional notes..."></textarea>
+                    {% endfor %}
                     </div>
-
-                    <button type="submit" class="btn btn-primary btn-lg w-100">
-                        <i class="fas fa-save"></i> Mark Attendance
-                    </button>
                 </form>
             </div>
         </div>
@@ -88,116 +71,296 @@
 
     <!-- Today's Summary -->
     <div class="col-lg-4">
-        <div class="card mb-4">
-            <div class="card-header">
-                Today's Summary
+        <div style="position: sticky; top: 20px;">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Today's Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Employees:</span>
+                            <strong>{{ employees|length }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Marked:</span>
+                            <strong id="marked_count">{{ today_attendance.count }}</strong>
+                        </div>
+                    </div>
+                    <hr>
+                    <div id="summary-stats">
+                        {% for status_key, status_count in attendance_counts.items %}
+                        <div class="mb-2 d-flex justify-content-between">
+                            {% if status_key == 'P' %}
+                                <span><i class="fas fa-check text-success"></i> Present:</span>
+                                <span id="count-{{ status_key }}">{{ status_count }}</span>
+                            {% elif status_key == 'A' %}
+                                <span><i class="fas fa-times text-danger"></i> Absent:</span>
+                                <span id="count-{{ status_key }}">{{ status_count }}</span>
+                            {% elif status_key == 'L' %}
+                                <span><i class="fas fa-plane text-warning"></i> Leave:</span>
+                                <span id="count-{{ status_key }}">{{ status_count }}</span>
+                            {% elif status_key == 'H' %}
+                                <span><i class="fas fa-hourglass-half text-info"></i> Half Day:</span>
+                                <span id="count-{{ status_key }}">{{ status_count }}</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between">
-                        <span>Total Marked:</span>
-                        <strong>{{ today_attendance.count }}</strong>
-                    </div>
+
+            <!-- Quick Options -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
                 </div>
-                <hr>
-                <div class="mb-2">
-                    <div class="d-flex justify-content-between">
-                        <span><i class="fas fa-check text-success"></i> Present:</span>
-                        <span>{{ today_attendance|dictsort:"status"|length }}</span>
-                    </div>
-                </div>
-                <div class="mb-2">
-                    <div class="d-flex justify-content-between">
-                        <span><i class="fas fa-times text-danger"></i> Absent:</span>
-                        <span>{{ today_attendance|dictsort:"status"|length }}</span>
-                    </div>
-                </div>
-                <div class="mb-2">
-                    <div class="d-flex justify-content-between">
-                        <span><i class="fas fa-plane text-warning"></i> Leave:</span>
-                        <span>{{ today_attendance|dictsort:"status"|length }}</span>
-                    </div>
+                <div class="card-body">
+                    <button class="btn btn-outline-success w-100 mb-2" id="mark_all_present">
+                        <i class="fas fa-check-double"></i> Mark All Present
+                    </button>
+                    <button class="btn btn-outline-danger w-100" id="mark_all_absent">
+                        <i class="fas fa-times-circle"></i> Mark All Absent
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Today's Attendance Records -->
-<div class="card">
-    <div class="card-header">
-        <i class="fas fa-list"></i> Today's Attendance Records
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Employee</th>
-                        <th>Status</th>
-                        <th>Check-In</th>
-                        <th>Check-Out</th>
-                        <th>Remarks</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for att in today_attendance %}
-                    <tr>
-                        <td><strong>{{ att.employee.full_name }}</strong></td>
-                        <td>
-                            {% if att.status == 'P' %}
-                                <span class="badge badge-success">Present</span>
-                            {% elif att.status == 'A' %}
-                                <span class="badge badge-danger">Absent</span>
-                            {% elif att.status == 'L' %}
-                                <span class="badge badge-warning">Leave</span>
-                            {% elif att.status == 'H' %}
-                                <span class="badge badge-info">Half Day</span>
-                            {% else %}
-                                <span class="badge badge-secondary">{{ att.get_status_display }}</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ att.check_in_time|default:"-" }}</td>
-                        <td>{{ att.check_out_time|default:"-" }}</td>
-                        <td>{{ att.remarks|default:"-" }}</td>
-                        <td>
-                            <a href="/admin/gate/attendance/{{ att.id }}/change/" class="btn btn-sm btn-warning">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" class="text-center text-muted py-4">
-                            No attendance records for today yet
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+<!-- Submit Button at Bottom Right -->
+<div id="submit-button-container" style="display: none; position: fixed; bottom: 30px; right: 30px; z-index: 1000;">
+    <button type="submit" form="attendance-form" class="btn btn-success btn-lg" style="padding: 12px 30px;">
+        <i class="fas fa-check"></i> Submit Attendance
+    </button>
 </div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Toggle Switch Styles */
+    .toggle-switch-container input[type="checkbox"] {
+        display: none;
+    }
+
+    .toggle-switch-container {
+        position: relative;
+    }
+
+    .toggle-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 70px;
+        height: 40px;
+        background-color: #dc3545;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        user-select: none;
+        position: relative;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .toggle-label::before {
+        content: '✕';
+        position: absolute;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: white;
+        border-radius: 50%;
+        top: 4px;
+        left: 4px;
+        transition: left 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        color: #dc3545;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    /* Checked State */
+    .toggle-switch-container input[type="checkbox"]:checked + .toggle-label {
+        background-color: #28a745;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 8px rgba(40, 167, 69, 0.5);
+    }
+
+    .toggle-switch-container input[type="checkbox"]:checked + .toggle-label::before {
+        content: '✓';
+        left: calc(100% - 36px);
+        color: #28a745;
+        font-size: 20px;
+    }
+
+    /* Hover Effect */
+    .toggle-label:hover {
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .toggle-switch-container input[type="checkbox"]:checked + .toggle-label:hover {
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 8px rgba(40, 167, 69, 0.7);
+    }
+
+    /* Loading State */
+    .attendance-item.loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    /* Attendance Item Hover */
+    .attendance-item {
+        transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .attendance-item:hover {
+        background-color: #f9f9f9;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+</style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    document.getElementById('attendance_form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        fetch('{% url "attendance_view" %}', {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: new FormData(this)
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert(data.message);
-            location.reload();
+const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}';
+let markedAttendance = {};
+
+// Set date input max to today to prevent future dates
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('attendance-date');
+    if (dateInput) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        dateInput.max = `${year}-${month}-${day}`;
+    }
+
+    // Search functionality
+    const searchInput = document.getElementById('employee-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const attendanceItems = document.querySelectorAll('.attendance-item');
+            
+            attendanceItems.forEach(item => {
+                const employeeName = item.querySelector('.employee-info h6').textContent.toLowerCase();
+                const employeeId = item.querySelector('.employee-info small').textContent.toLowerCase();
+                
+                if (employeeName.includes(searchTerm) || employeeId.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
         });
+    }
+});
+
+// Handle toggle switches - Store changes locally without immediate AJAX
+document.querySelectorAll('.attendance-toggle').forEach(toggle => {
+    toggle.addEventListener('change', function() {
+        const employeeId = this.closest('.toggle-switch-container').dataset.employeeId;
+        const status = this.checked ? 'P' : 'A'; // ON=Present, OFF=Absent
+        const parentItem = this.closest('.attendance-item');
+
+        // Store in local object
+        markedAttendance[employeeId] = status;
+
+        // Update the badge
+        const badge = parentItem.querySelector('.status-badge');
+        if (status === 'P') {
+            badge.innerHTML = '<span class="badge badge-success">Present</span>';
+        } else {
+            badge.innerHTML = '<span class="badge badge-secondary">Absent</span>';
+        }
+        
+        // Update summary
+        updateSummary();
+        
+        // Show submit button if any attendance is marked
+        if (Object.keys(markedAttendance).length > 0) {
+            document.getElementById('submit-button-container').style.display = 'block';
+        }
     });
+});
+
+// Handle form submission
+document.getElementById('attendance-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    if (Object.keys(markedAttendance).length === 0) {
+        alert('Please mark attendance for at least one employee');
+        return;
+    }
+    
+    if (!confirm('Submit attendance for ' + Object.keys(markedAttendance).length + ' employee(s)?')) {
+        return;
+    }
+    
+    // Get selected date
+    const selectedDate = document.getElementById('attendance-date').value;
+    
+    // Send all marked attendance at once
+    const attendanceData = new URLSearchParams();
+    attendanceData.append('date', selectedDate);
+    for (const [empId, status] of Object.entries(markedAttendance)) {
+        attendanceData.append('attendance[' + empId + ']', status);
+    }
+
+    fetch('{% url "attendance_view" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': csrftoken
+        },
+        body: attendanceData.toString()
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert('Attendance submitted successfully!');
+            location.reload();
+        } else {
+            alert('Error: ' + (data.message || 'Failed to submit attendance'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error submitting attendance');
+    });
+});
+
+// Mark All Present
+document.getElementById('mark_all_present')?.addEventListener('click', function() {
+    if (confirm('Mark all employees as Present?')) {
+        document.querySelectorAll('.attendance-toggle:not(:checked)').forEach(toggle => {
+            toggle.click();
+        });
+    }
+});
+
+// Mark All Absent
+document.getElementById('mark_all_absent')?.addEventListener('click', function() {
+    if (confirm('Mark all employees as Absent?')) {
+        document.querySelectorAll('.attendance-toggle:checked').forEach(toggle => {
+            toggle.click();
+        });
+    }
+});
+
+// Update summary counts
+function updateSummary() {
+    const presentCount = document.querySelectorAll('.attendance-toggle:checked').length;
+    const totalEmployees = document.querySelectorAll('.attendance-toggle').length;
+    const absentCount = totalEmployees - presentCount;
+    
+    document.getElementById('marked_count').textContent = presentCount + absentCount;
+    document.getElementById('count-P').textContent = presentCount;
+    document.getElementById('count-A').textContent = absentCount;
+}
 </script>
 {% endblock %}

@@ -1,0 +1,189 @@
+{% extends "gate/base.html" %}
+
+{% block title %}Add Employee - Gate Garments HR{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="page-title">
+            <i class="fas fa-user-plus"></i> Add New Employee
+        </h2>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+{% if form.non_field_errors %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+        {% endfor %}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endif %}
+
+<form method="post" class="row">
+    {% csrf_token %}
+    
+    <!-- Personal Information -->
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-id-card"></i> Personal Information
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
+                    <input type="text" id="first_name" name="first_name" class="form-control" required autofocus>
+                </div>
+                
+                <div class="form-group">
+                    <label for="last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
+                    <input type="text" id="last_name" name="last_name" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                    <input type="email" id="email" name="email" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone" class="form-label">Phone</label>
+                    <input type="tel" id="phone" name="phone" class="form-control" placeholder="+91-XXXXXXXXXX">
+                </div>
+                
+                <div class="form-group">
+                    <label for="date_of_birth" class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                    <input type="date" id="date_of_birth" name="date_of_birth" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gender" class="form-label">Gender <span class="text-danger">*</span></label>
+                    <select id="gender" name="gender" class="form-select" required>
+                        <option value="">-- Select Gender --</option>
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                        <option value="O">Other</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employment Details -->
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-briefcase"></i> Employment Details
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="department" class="form-label">Department <span class="text-danger">*</span></label>
+                    <select id="department" name="department" class="form-select" required>
+                        <option value="">-- Select Department --</option>
+                        {% for dept in departments %}
+                            <option value="{{ dept.id }}">{{ dept.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="designation" class="form-label">Designation <span class="text-danger">*</span></label>
+                    <input type="text" id="designation" name="designation" class="form-control" placeholder="e.g., Manager, Developer, etc." required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="date_of_joining" class="form-label">Date of Joining <span class="text-danger">*</span></label>
+                    <input type="date" id="date_of_joining" name="date_of_joining" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                    <select id="status" name="status" class="form-select" required>
+                        <option value="A" selected>Active</option>
+                        <option value="I">Inactive</option>
+                        <option value="S">Suspended</option>
+                        <option value="R">Retired</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Information -->
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-map-marker-alt"></i> Contact Information
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="address" class="form-label">Address <span class="text-danger">*</span></label>
+                    <textarea id="address" name="address" class="form-control" rows="3" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="city" class="form-label">City <span class="text-danger">*</span></label>
+                    <input type="text" id="city" name="city" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="state" class="form-label">State <span class="text-danger">*</span></label>
+                    <input type="text" id="state" name="state" class="form-control" value="Tamil Nadu" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="postal_code" class="form-label">Postal Code <span class="text-danger">*</span></label>
+                    <input type="text" id="postal_code" name="postal_code" class="form-control" required>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bank Details -->
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-university"></i> Bank Details
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="bank_name" class="form-label">Bank Name</label>
+                    <input type="text" id="bank_name" name="bank_name" class="form-control" placeholder="e.g., State Bank of India">
+                </div>
+                
+                <div class="form-group">
+                    <label for="account_number" class="form-label">Account Number</label>
+                    <input type="text" id="account_number" name="account_number" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label for="ifsc_code" class="form-label">IFSC Code</label>
+                    <input type="text" id="ifsc_code" name="ifsc_code" class="form-control" placeholder="e.g., SBIN0001234">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Add Employee
+                </button>
+                <a href="{% url 'employee_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

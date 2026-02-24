@@ -9,7 +9,10 @@ urlpatterns = [
     
     # Employee Management
     path('employees/', views.employee_list, name='employee_list'),
+    path('employees/add/', views.employee_add, name='employee_add'),
     path('employees/<int:employee_id>/', views.employee_detail, name='employee_detail'),
+    path('employees/<int:employee_id>/edit/', views.employee_edit, name='employee_edit'),
+    path('employees/<int:employee_id>/delete/', views.employee_delete, name='employee_delete'),
     
     # Attendance
     path('attendance/', views.attendance_view, name='attendance_view'),

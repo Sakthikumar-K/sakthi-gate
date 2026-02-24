@@ -157,6 +157,141 @@ def employee_detail(request, employee_id):
 
 
 @login_required
+def employee_edit(request, employee_id):
+    """Edit employee details"""
+    if not (request.user.is_staff or request.user.is_superuser):
+        return redirect('employee_dashboard')
+    
+    employee = get_object_or_404(Employee, pk=employee_id)
+    departments = Department.objects.all()
+    
+    if request.method == 'POST':
+        try:
+            # Update employee fields
+            employee.first_name = request.POST.get('first_name')
+            employee.last_name = request.POST.get('last_name')
+            employee.email = request.POST.get('email')
+            employee.phone = request.POST.get('phone', '')
+            employee.date_of_birth = request.POST.get('date_of_birth')
+            employee.gender = request.POST.get('gender')
+            
+            # Employment details
+            department_id = request.POST.get('department')
+            if department_id:
+                employee.department_id = department_id
+            
+            employee.designation = request.POST.get('designation')
+            employee.date_of_joining = request.POST.get('date_of_joining')
+            employee.status = request.POST.get('status')
+            
+            # Contact information
+            employee.address = request.POST.get('address')
+            employee.city = request.POST.get('city')
+            employee.state = request.POST.get('state')
+            employee.postal_code = request.POST.get('postal_code')
+            
+            # Bank details
+            employee.bank_name = request.POST.get('bank_name', '')
+            employee.account_number = request.POST.get('account_number', '')
+            employee.ifsc_code = request.POST.get('ifsc_code', '')
+            
+            # Save changes
+            employee.save()
+            
+            from django.contrib import messages
+            messages.success(request, f'Employee {employee.full_name} has been updated successfully!')
+            
+            return redirect('employee_detail', employee_id=employee.id)
+        
+        except Exception as e:
+            from django.contrib import messages
+            messages.error(request, f'Error updating employee: {str(e)}')
+    
+    context = {
+        'employee': employee,
+        'form': {},
+        'departments': departments,
+    }
+    return render(request, 'gate/employee_edit.html', context)
+
+
+@login_required
+def employee_add(request):
+    """Add new employee"""
+    if not (request.user.is_staff or request.user.is_superuser):
+        return redirect('employee_dashboard')
+    
+    departments = Department.objects.all()
+    
+    if request.method == 'POST':
+        try:
+            # Generate unique employee ID
+            from django.db.models import Max
+            last_employee = Employee.objects.all().order_by('-id').first()
+            employee_id = f"EMP{(last_employee.id if last_employee else 0) + 1:05d}"
+            
+            # Create new employee
+            employee = Employee(
+                employee_id=employee_id,
+                first_name=request.POST.get('first_name'),
+                last_name=request.POST.get('last_name'),
+                email=request.POST.get('email'),
+                phone=request.POST.get('phone', ''),
+                date_of_birth=request.POST.get('date_of_birth'),
+                gender=request.POST.get('gender'),
+                department_id=request.POST.get('department'),
+                designation=request.POST.get('designation'),
+                date_of_joining=request.POST.get('date_of_joining'),
+                status=request.POST.get('status', 'A'),
+                address=request.POST.get('address'),
+                city=request.POST.get('city'),
+                state=request.POST.get('state'),
+                postal_code=request.POST.get('postal_code'),
+                bank_name=request.POST.get('bank_name', ''),
+                account_number=request.POST.get('account_number', ''),
+                ifsc_code=request.POST.get('ifsc_code', ''),
+            )
+            
+            employee.save()
+            
+            from django.contrib import messages
+            messages.success(request, f'Employee {employee.full_name} has been created successfully!')
+            
+            return redirect('employee_detail', employee_id=employee.id)
+        
+        except Exception as e:
+            from django.contrib import messages
+            messages.error(request, f'Error creating employee: {str(e)}')
+    
+    context = {
+        'departments': departments,
+        'is_new': True,
+    }
+    return render(request, 'gate/employee_add.html', context)
+
+
+@login_required
+def employee_delete(request, employee_id):
+    """Delete employee"""
+    if not (request.user.is_staff or request.user.is_superuser):
+        return redirect('employee_dashboard')
+    
+    employee = get_object_or_404(Employee, pk=employee_id)
+    
+    try:
+        employee_name = employee.full_name
+        employee.delete()
+        
+        from django.contrib import messages
+        messages.success(request, f'Employee {employee_name} has been deleted successfully!')
+    except Exception as e:
+        from django.contrib import messages
+        messages.error(request, f'Error deleting employee: {str(e)}')
+    
+    return redirect('employee_list')
+
+
+@login_required
 def attendance_view(request):
     """Mark and view attendance"""
     if not (request.user.is_staff or request.user.is_superuser):
@@ -165,36 +300,89 @@ def attendance_view(request):
     today = datetime.now().date()
     
     if request.method == 'POST':
-        employee_id = request.POST.get('employee_id')
-        status = request.POST.get('status')
-        check_in_time = request.POST.get('check_in_time')
-        check_out_time = request.POST.get('check_out_time')
-        remarks = request.POST.get('remarks', '')
+        success_count = 0
+        error_count = 0
         
-        employee = get_object_or_404(Employee, pk=employee_id)
+        # Check if this is bulk submission (attendance[id]=status format)
+        attendance_data = {}
+        for key, value in request.POST.items():
+            if key.startswith('attendance[') and key.endswith(']'):
+                emp_id = key[11:-1]  # Extract employee_id from "attendance[id]"
+                attendance_data[emp_id] = value
         
-        attendance, created = Attendance.objects.update_or_create(
-            employee=employee,
-            date=today,
-            defaults={
-                'status': status,
-                'check_in_time': check_in_time or None,
-                'check_out_time': check_out_time or None,
-                'remarks': remarks,
-            }
-        )
+        # If no bulk data, try single submission (for backward compatibility)
+        if not attendance_data:
+            employee_id = request.POST.get('employee_id')
+            status = request.POST.get('status')
+            check_in_time = request.POST.get('check_in_time')
+            check_out_time = request.POST.get('check_out_time')
+            remarks = request.POST.get('remarks', '')
+            
+            if employee_id:
+                try:
+                    employee = Employee.objects.get(pk=employee_id)
+                    attendance, created = Attendance.objects.update_or_create(
+                        employee=employee,
+                        date=today,
+                        defaults={
+                            'status': status,
+                            'check_in_time': check_in_time or None,
+                            'check_out_time': check_out_time or None,
+                            'remarks': remarks,
+                        }
+                    )
+                    success_count = 1
+                except Employee.DoesNotExist:
+                    error_count = 1
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'success', 'message': 'Attendance marked'})
+            return redirect('attendance_view')
         
+        # Process bulk attendance submission
+        for employee_id, status in attendance_data.items():
+            try:
+                employee = Employee.objects.get(pk=employee_id)
+                attendance, created = Attendance.objects.update_or_create(
+                    employee=employee,
+                    date=today,
+                    defaults={'status': status}
+                )
+                success_count += 1
+            except Employee.DoesNotExist:
+                error_count += 1
+            except Exception as e:
+                error_count += 1
+        
+        # Return JSON response for AJAX requests
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({'status': 'success', 'message': 'Attendance marked'})
+            if error_count == 0:
+                return JsonResponse({'status': 'success', 'message': f'Attendance marked successfully for {success_count} employee(s)'})
+            else:
+                return JsonResponse({'status': 'partial', 'message': f'Marked {success_count} employee(s), {error_count} failed'}, status=400)
+        
         return redirect('attendance_view')
     
     employees = Employee.objects.filter(status='A')
     today_attendance = Attendance.objects.filter(date=today)
     
+    # Get IDs of employees marked as present
+    marked_employees = list(today_attendance.filter(status='P').values_list('employee_id', flat=True))
+    
+    # Count attendance by status
+    attendance_counts = {
+        'P': today_attendance.filter(status='P').count(),
+        'A': today_attendance.filter(status='A').count(),
+        'L': today_attendance.filter(status='L').count(),
+        'H': today_attendance.filter(status='H').count(),
+    }
+    
     context = {
         'employees': employees,
         'today': today,
         'today_attendance': today_attendance,
+        'marked_employees': marked_employees,
+        'attendance_counts': attendance_counts,
     }
     return render(request, 'gate/attendance.html', context)
 
@@ -321,6 +509,9 @@ def salary_structure(request):
         return redirect('employee_dashboard')
     
     employee_id = request.GET.get('employee_id')
+    if not employee_id:
+        return redirect('employee_list')
+    
     employee = get_object_or_404(Employee, pk=employee_id)
     
     try:
@@ -344,7 +535,7 @@ def salary_structure(request):
                 'other_deductions': request.POST.get('other_deductions', 0),
             }
         )
-        return redirect('salary_structure')
+        return redirect('salary_structure', employee_id=employee_id)
     
     context = {
         'employee': employee,
@@ -363,10 +554,14 @@ def payroll_processing(request):
         month = request.POST.get('month')
         year = request.POST.get('year')
         
+        # Convert to proper types
+        month_str = str(month).zfill(2)
+        year_int = int(year)
+        
         # Create or get payroll month
         payroll_month, created = PayrollMonth.objects.get_or_create(
-            month=f"{year}-{month.zfill(2)}",
-            year=year,
+            month=f"{year_int}-{month_str}",
+            year=year_int,
             defaults={'status': 'DRAFT'}
         )
         
